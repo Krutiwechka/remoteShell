@@ -8,4 +8,8 @@ public class Message implements Serializable {
     protected Message(MessageType t) {
         this.type = t;
 	}
+
+    public MessageType getType() {
+        return type;
+    }
 }

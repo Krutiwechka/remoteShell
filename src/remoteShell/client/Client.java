@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import remoteShell.*;
@@ -63,7 +64,7 @@ class Client {
 				try {
 					while (true) {
 						Message msg = getCommand(ses, in);
-						if (! processCommand(ses, msg, is, os)) {
+						if (!processCommand(ses, msg, is, os)) {
 							break;
 						}				
 					}			
@@ -78,94 +79,106 @@ class Client {
 	
 	static boolean openSession(Session ses, ObjectInputStream is, ObjectOutputStream os, Scanner in) 
 			throws IOException, ClassNotFoundException {
-		os.writeObject( new MessageConnect(ses.userNic, ses.userName));
-		MessageConnectResult msg = (MessageConnectResult) is.readObject();
-		if (msg.Error()== false ) {
-			System.err.println("connected");
+		os.writeObject( new ConnectMessage(ses.username));
+		ConnectMessageResponse msg = (ConnectMessageResponse) is.readObject();
+		if (msg.getErrorMessage() == "") {
+			System.err.println("Connected");
 			ses.connected = true;
 			return true;
 		}
 		System.err.println("Unable to connect: "+ msg.getErrorMessage());
 		System.err.println("Press <Enter> to continue...");
-		if( in.hasNextLine())
+		if(in.hasNextLine())
 			in.nextLine();
 		return false;
 	}
 	
+	static void printPrompt() {
+		System.out.println("Not designed");
+	}
+
 	static void closeSession(Session ses, ObjectOutputStream os) throws IOException {
 		if ( ses.connected ) {
 			ses.connected = false;
-			os.writeObject(new MessageDisconnect());
+			os.writeObject(new DisconnectMessage(ses.username));
 		}
 	}
 
-	// static Message getCommand(Session ses, Scanner in) {	
-	// 	while (true) {
-	// 		printPrompt();
-	// 		if (in.hasNextLine()== false)
-	// 			break;
-	// 		String str = in.nextLine();
-	// 		byte cmd = translateCmd(str);
-	// 		switch ( cmd ) {
-	// 			case -1:
-	// 				return null;
-	// 			case Protocol.CMD_CHECK_MAIL:
-	// 				return new MessageCheckMail();
-	// 			case Protocol.CMD_USER:
-	// 				return new MessageUser();
-	// 			case Protocol.CMD_LETTER:
-	// 				return inputLetter(in);
-	// 			case 0:
-	// 				continue;
-	// 			default: 
-	// 				System.err.println("Unknow command!");
-	// 				continue;
-	// 		}
-	// 	}
-	// 	return null;
-	// }
+	static MessageType strToMessage(String line) {
+		if (line == "" || line == null)
+			return null;
+		StringTokenizer tokenizer = new StringTokenizer(line);
+		String command = tokenizer.nextToken();
+
+		if (commands.containsKey(command))
+			return commands.get(command);
+		return null;
+	}
+
+	static Message getCommand(Session ses, Scanner in) {	
+		while (true) {
+			printPrompt();
+			if (in.hasNextLine()== false)
+				break;
+			String str = in.nextLine();
+			MessageType action = strToMessage(str);
+			switch (action) {
+				case Connect: {
+					return new ConnectMessage(ses.username);
+				}
+				case Disconnect:
+					return new DisconnectMessage(ses.username);
+				case Execute: {
+					return new ExecuteMessage(str);
+				}
+				default: 
+					System.err.println("Unknown command!");
+					continue;
+			}
+		}
+		return null;
+	}
 	
 	
-	// static TreeMap<String,Byte> commands = new TreeMap<String,Byte>();
-	// static {
-	// 	commands.put("q", new Byte((byte) -1));
-	// 	commands.put("quit", new Byte((byte) -1));
-	// 	commands.put("m", new Byte(Protocol.CMD_CHECK_MAIL));
-	// 	commands.put("mail", new Byte(Protocol.CMD_CHECK_MAIL));
-	// 	commands.put("u", new Byte(Protocol.CMD_USER));
-	// 	commands.put("users", new Byte(Protocol.CMD_USER));
-	// 	commands.put("l", new Byte(Protocol.CMD_LETTER));
-	// 	commands.put("letter", new Byte(Protocol.CMD_LETTER));
-	// }
+	static TreeMap<String,MessageType> commands = new TreeMap<String,MessageType>();
+	static {
+		commands.put("q", MessageType.Disconnect);
+		commands.put("quit", MessageType.Disconnect);
+		commands.put("c", MessageType.Connect);
+		commands.put("connect", MessageType.Connect);
+		commands.put("x", MessageType.Execute);
+		commands.put("execute", MessageType.Execute);
+	}
 	
 	
-	// static boolean processCommand(Session ses, Message msg, 
-	// 		                      ObjectInputStream is, ObjectOutputStream os) 
-    //         throws IOException, ClassNotFoundException {
-	// 	if ( msg != null )
-	// 	{
-	// 		os.writeObject(msg);
-	// 		ResponseMessage res = (ResponseMessage) is.readObject();
-	// 		if ( res.Error()) {
-	// 			System.err.println(res.getErrorMessage());
-	// 		} else {
-	// 			switch (res.getID()) {
-	// 				case Protocol.CMD_CHECK_MAIL:
-	// 					printMail(( MessageCheckMailResult ) res);
-	// 					break;
-	// 				case Protocol.CMD_USER:
-	// 					printUsers(( MessageUserResult ) res);
-	// 					break;
-	// 				case Protocol.CMD_LETTER:
-	// 					System.out.println("OK...");
-	// 					break;
-	// 				default:
-	// 					assert(false);
-	// 					break;
-	// 			}
-	// 		}
-	// 		return true;
-	// 	}
-	// 	return false;
-	// }
+	static boolean processCommand(Session ses, Message msg, 
+			                      ObjectInputStream is, ObjectOutputStream os) 
+            throws IOException, ClassNotFoundException {
+		if ( msg != null )
+		{
+			os.writeObject(msg);
+			ResponseMessage response = (ResponseMessage) is.readObject();
+			if (response.getErrorMessage() != "") {
+				System.err.println(response.getErrorMessage());
+			} else {
+				switch (response.getType()) {
+					case Connect:
+						System.out.println("Server response: connected");
+						break;
+					case Disconnect:
+						System.out.println("Server response: disconnected");
+						break;
+					case Execute:
+						System.out.println("Execution result:");
+						System.out.println(((ExecuteMessageResponse)msg).getTerminalResponse());
+						break;
+					default:
+						assert(false);
+						break;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 }

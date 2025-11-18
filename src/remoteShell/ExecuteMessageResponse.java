@@ -3,8 +3,12 @@ package remoteShell;
 public class ExecuteMessageResponse extends ResponseMessage{
     String terminalResponse;
     
-    ExecuteMessageResponse(String rs) {
+    public ExecuteMessageResponse(String rs) {
         super(MessageType.Execute);
         terminalResponse = rs;
+    }
+
+    public String getTerminalResponse() {
+        return terminalResponse;
     }
 }

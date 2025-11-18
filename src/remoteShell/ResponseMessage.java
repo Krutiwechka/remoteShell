@@ -12,4 +12,8 @@ public class ResponseMessage extends Message {
         super(t);
         errorMessage = "";
     }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 }
