@@ -15,6 +15,16 @@ import remoteShell.*;
 class Client {
     Client(Protocol protocol, String portStr, String address, String name) throws 
 	IllegalArgumentException, RuntimeException, UnknownHostException {
+		connect(protocol, portStr, address, name);
+	}
+
+	Client(Protocol protocol, String portStr, String name) throws 
+	IllegalArgumentException, RuntimeException, UnknownHostException {
+		this(protocol, portStr, InetAddress.getLocalHost().toString(), name);
+	}
+
+	void connect(Protocol protocol, String portStr, String address, String name) throws 
+	IllegalArgumentException, RuntimeException, UnknownHostException {
 		int port = parsePort(portStr);
 
 		try (Socket sock = new Socket(address, port)) { 		
@@ -25,12 +35,6 @@ class Client {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
-
-	Client(Protocol protocol, String portStr, String name) throws 
-	IllegalArgumentException, RuntimeException, UnknownHostException {
-		this(protocol, portStr, InetAddress.getLocalHost().toString(), name);
-	}
-
 	
 	static int parsePort(String portStr) throws IllegalArgumentException {
 		try {
@@ -40,14 +44,6 @@ class Client {
 		}
 	}
 
-	// static void waitKeyToStop() {
-	// 	System.err.println("Press a key to stop...");
-	// 	try {
-	// 		System.in.read();
-	// 	} catch (IOException e) {
-	// 	}
-	// }
-	
 	static class Session {
 		boolean connected = false;
 		String username = null;
@@ -94,7 +90,12 @@ class Client {
 	}
 	
 	static void printPrompt() {
-		System.out.println("Not designed");
+		System.out.println(
+			"Client commands:\n" + 
+			"\tq/quit - disconnect and exit application\n" +
+			"\tc/connect [port] [address] - connect/reconnect to server\n" + 
+			"\tx/execute [command] - execute command in linux terminal\n"
+		);
 	}
 
 	static void closeSession(Session ses, ObjectOutputStream os) throws IOException {
@@ -115,6 +116,14 @@ class Client {
 		return null;
 	}
 
+	static String getArg(String executeCommand) throws IllegalArgumentException {
+		if (executeCommand.startsWith("x "))
+			return executeCommand.substring("x ".length());
+		else if (executeCommand.startsWith("execute "))
+			return executeCommand.substring("execute ".length());
+		throw new IllegalArgumentException("Not an execution command: " + executeCommand);
+	}
+
 	static Message getCommand(Session ses, Scanner in) {	
 		while (true) {
 			printPrompt();
@@ -124,12 +133,13 @@ class Client {
 			MessageType action = strToMessage(str);
 			switch (action) {
 				case Connect: {
+					// TODO: implement logic
 					return new ConnectMessage(ses.username);
 				}
 				case Disconnect:
 					return new DisconnectMessage(ses.username);
 				case Execute: {
-					return new ExecuteMessage(str);
+					return new ExecuteMessage(getArg(str));
 				}
 				default: 
 					System.err.println("Unknown command!");
