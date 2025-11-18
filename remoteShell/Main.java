@@ -1,6 +1,8 @@
 package remoteShell;
 
 import java.util.Arrays;
+import remoteShell.server.*;
+import remoteShell.client.*;
 
 public class Main {
 	public static void main(String[] args) {
