@@ -23,7 +23,7 @@ class Client {
 		this(protocol, portStr, InetAddress.getLocalHost().toString(), name);
 	}
 
-	void connect(Protocol protocol, String portStr, String address, String name) throws 
+	static void connect(Protocol protocol, String portStr, String address, String name) throws 
 	IllegalArgumentException, RuntimeException, UnknownHostException {
 		int port = parsePort(portStr);
 
@@ -92,8 +92,8 @@ class Client {
 	static void printPrompt() {
 		System.out.println(
 			"Client commands:\n" + 
-			"\tq/quit - disconnect and exit application\n" +
-			"\tc/connect [port] [address] - connect/reconnect to server\n" + 
+			"\tq/uit - disconnect and exit application\n" +
+			"\tc/connect [protocol: TCP/UDP] [port] [address] - connect/reconnect to server\n" + 
 			"\tx/execute [command] - execute command in linux terminal\n"
 		);
 	}
@@ -124,7 +124,31 @@ class Client {
 		throw new IllegalArgumentException("Not an execution command: " + executeCommand);
 	}
 
-	static Message getCommand(Session ses, Scanner in) {	
+	static String[] getConnectionArgs(String connectCommand) throws IllegalArgumentException {
+		String commandStr = connectCommand;
+		if (commandStr.startsWith("c "))
+			commandStr = commandStr.substring("c ".length());
+		else if (commandStr.startsWith("connect "))
+			commandStr = commandStr.substring("connect ".length());
+		else
+			throw new IllegalArgumentException("Not a connection command: " + connectCommand);
+		String[] parts = connectCommand.split(" ");
+
+		if (parts.length == 3 && strToProtocol(parts[0]) != null)
+			return parts;
+		return new String[0];
+	}
+
+	static Protocol strToProtocol(String protocolName) {
+		protocolName = protocolName.toLowerCase();
+		if (protocolName.equals("tcp"))
+			return Protocol.TCP;
+		else if (protocolName.equals("udp"))
+			return Protocol.UDP;
+		return null;
+	}
+
+	static Message getCommand(Session ses, Scanner in) throws UnknownHostException{	
 		while (true) {
 			printPrompt();
 			if (in.hasNextLine()== false)
@@ -133,7 +157,18 @@ class Client {
 			MessageType action = strToMessage(str);
 			switch (action) {
 				case Connect: {
-					// TODO: implement logic
+					if (ses.connected) {
+						System.err.println("Already connected");
+						continue;
+					}
+					String[] args = getConnectionArgs(str);
+					if (args.length == 0) {
+						System.err.println("Invalid arguments for connection: " + str);
+						printPrompt();
+						continue;
+					}
+					
+					connect(strToProtocol(args[0]), args[1], args[2], ses.username);
 					return new ConnectMessage(ses.username);
 				}
 				case Disconnect:
@@ -143,6 +178,7 @@ class Client {
 				}
 				default: 
 					System.err.println("Unknown command!");
+					printPrompt();
 					continue;
 			}
 		}
