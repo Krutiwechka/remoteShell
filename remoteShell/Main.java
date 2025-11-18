@@ -36,10 +36,10 @@ public class Main {
 						throw new IllegalArgumentException("Port is empty");
 					}
 					else if(i != args.length - 2 && args[i + 2].charAt(0) != '-') {
-						Client.connect(args[i + 1], args[i + 2], Arrays.asList(args).contains("-u") ? Protocol.UDP : Protocol.TCP);
+						Client.connect(args[i + 1], args[i + 2], "name", Arrays.asList(args).contains("-u") ? Protocol.UDP : Protocol.TCP);
 					}
 					else {
-						Client.connect(args[i + 1], args[i + 2], Arrays.asList(args).contains("-u") ? Protocol.UDP : Protocol.TCP);
+						Client.connect(args[i + 1], "name", Arrays.asList(args).contains("-u") ? Protocol.UDP : Protocol.TCP);
 					}
 					break;
 				}

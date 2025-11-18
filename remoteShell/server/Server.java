@@ -11,7 +11,7 @@ import remoteShell.Protocol;
 
 public class Server {
 	protected static void serverLog(String msg) {
-		System.err.println("["+ LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + " ][SERVER]: " + msg);
+		System.err.println("["+ LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "][SERVER]: " + msg);
 	}
 	public static void listen(String portStr, Protocol protocol) throws IllegalArgumentException {
 		int port;
@@ -27,11 +27,11 @@ public class Server {
 		stopper.start();
 		serverLog("Server started");
 		try(ServerSocket serv = new ServerSocket(port)){
-			serverLog("Listening port " + portStr);
+			serverLog("Listening port " + portStr +"...");
 			while (true) {
 				Socket sock = accept(serv);
 				if(sock != null) {
-					serverLog(sock.getInetAddress().getHostName() + " connected");
+					serverLog(sock.getInetAddress() + " connected");
 					ServerThread server = new ServerThread(sock);
 					server.start();
 				}
@@ -42,7 +42,7 @@ public class Server {
 		} catch (IOException e) {
 			serverLog(e.getMessage());
 		} finally {
-			serverLog("stopped");
+			serverLog("Stopped");
 		}
 		try {
 			Thread.sleep(1000);
