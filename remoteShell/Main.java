@@ -1,27 +1,58 @@
 package remoteShell;
 
-import java.util.StringTokenizer;
+import java.util.Arrays;
 
 public class Main {
 	public static void main(String[] args) {
 		try{
 			if(args.length >= 1) {
 				int i = 0;
-				while(true) {
+				while(i < args.length) {
 					if(args[i].equals("-h") || args[0].equals("--help")){
 					System.out.println(
-							"\t-l [PORT] 						Server starts listening chosen port\n" + 
-							"\t-c, --connect [IP] [PORT]	 	Сonnect chosen server\n" +
+							"\t-l, --listen [PORT] 				Server starts listening chosen port\n" + 
+							"\t-c, --connect [PORT] [IP]	 	Сonnect chosen server\n" +
 							"\t-u, --udp 						Use UDP instead of default TCP\n" +
-							"\t-h, --help 						Сommand line syntax\n");
+							"\t-h, --help 						Сommand line syntax\n"+ 
+							"(*) Uses TCP protocol as default");
 					break;
 					}
 				else if(args[i].equals("-u" ) || args[i].equals("-udp" )){
 					i++;
-					
+				}
+				else if(args[i].equals("-l") || args[i].equals("--listen")) {
+					 	if(i == args.length - 1) { 
+					 		throw new IllegalArgumentException("Port is empty");
+					 	}
+					 	else {
+					 		Server.listen(args[i + 1], Arrays.asList(args).contains("-u") ? Protocol.UDP : Protocol.TCP);
+					 		break;
+					 	}
+					}
+				else if(args[i].equals("-c") || args[i].equals("--connect")) {
+					if(i == args.length - 1) { 
+						throw new IllegalArgumentException("Port is empty");
+					}
+					else if(i != args.length - 2 && args[i + 2].charAt(0) != '-') {
+						Client.connect(args[i + 1], args[i + 2], Arrays.asList(args).contains("-u") ? Protocol.UDP : Protocol.TCP);
+					}
+					else {
+						Client.connect(args[i + 1], args[i + 2], Arrays.asList(args).contains("-u") ? Protocol.UDP : Protocol.TCP);
+					}
+					break;
+				}
+				else {
+					throw new IllegalArgumentException("Option is not supported");
+				}
 				}
 			}
+			else {
+				throw new IllegalArgumentException("Nothing to do, add -h for help");
+			}
+		} catch(IllegalArgumentException e) {
+			System.out.println(e.getMessage());
+		} catch(Exception e) {
+			System.out.println(e.getMessage());
 		}
 	}
-
 }
