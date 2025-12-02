@@ -13,3 +13,4 @@ public class Message implements Serializable {
         return type;
     }
 }
+

@@ -8,3 +8,4 @@ public class DisconnectMessage extends Message {
         this.username = name;
     }
 }
+

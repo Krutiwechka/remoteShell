@@ -11,3 +11,4 @@ public class ConnectMessageResponse extends ResponseMessage{
         super(MessageType.Connect, "");
     }
 }
+
