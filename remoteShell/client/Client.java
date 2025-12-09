@@ -13,17 +13,17 @@ import java.util.TreeMap;
 import remoteShell.*;
 
 public class Client {
-    Client(String portStr, String address, String name, Protocol protocol) throws 
+    Client(String portStr, String address, String name) throws 
 	IllegalArgumentException, RuntimeException, UnknownHostException {
-		connect(portStr, address, name, protocol);
+		connect(portStr, address, name);
 	}
 
-	static public void connect(String portStr, String name, Protocol protocol) throws 
+	static public void connect(String portStr, String name) throws 
 	IllegalArgumentException, RuntimeException, UnknownHostException {
-		connect(portStr, InetAddress.getLocalHost().toString(), name, protocol);
+		connect(portStr, InetAddress.getLocalHost().toString(), name);
 	}
 
-	static public void connect(String portStr, String address, String name, Protocol protocol) throws 
+	static public void connect(String portStr, String address, String name) throws 
 	IllegalArgumentException, RuntimeException, UnknownHostException {
 		int port = parsePort(portStr);
 
@@ -137,18 +137,9 @@ public class Client {
 			throw new IllegalArgumentException("Not a connection command: " + connectCommand);
 		String[] parts = connectCommand.split(" ");
 
-		if (parts.length == 3 && strToProtocol(parts[0]) != null)
+		if (parts.length == 3)
 			return parts;
 		return new String[0];
-	}
-
-	static Protocol strToProtocol(String protocolName) {
-		protocolName = protocolName.toLowerCase();
-		if (protocolName.equals("tcp"))
-			return Protocol.TCP;
-		else if (protocolName.equals("udp"))
-			return Protocol.UDP;
-		return null;
 	}
 
 	static Message getCommand(Session ses, Scanner in) throws UnknownHostException{	
@@ -172,7 +163,7 @@ public class Client {
 						continue;
 					}
 					
-					connect(args[1], args[2], ses.username, strToProtocol(args[0]));
+					connect(args[1], args[2], ses.username);
 					return new ConnectMessage(ses.username);
 				}
 				case Disconnect:

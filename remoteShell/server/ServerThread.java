@@ -69,7 +69,7 @@ public class ServerThread extends Thread{
 		} catch(IOException e) {
 			Server.serverLog(e.getMessage());
 		}
-		Server.serverLog("User " + this.name + " connected");
+		Server.serverLog("User " + this.name + " disconnected");
 		this.interrupt();
 	}
 	private void execute(Message msg) {
@@ -83,34 +83,44 @@ public class ServerThread extends Thread{
 		StringBuilder output = new StringBuilder();
 		try {
 	        proc = pb.start();
+	        
 	        try(BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
-	        	String line;
-	        	while ((line = br.readLine()) != null) {
+	            String line;
+	            while ((line = br.readLine()) != null) {
 	                output.append(line).append('\n');
-	        	}
-	            boolean finished = proc.waitFor(10, TimeUnit.SECONDS);
-	            if(!finished) {
-	            	proc.destroyForcibly();
-	                os.writeObject(new ExecuteMessageResponse("Timed out"));
-	                return;
 	            }
+	            
+	            boolean finished = proc.waitFor(10, TimeUnit.SECONDS);
+	            
+	            if(!finished) {
+	                proc.destroyForcibly();
+	                os.writeObject(new ExecuteMessageResponse("Timed out after 10 seconds."));
+	                return; 
+	            }
+	            
 	            int exit = proc.exitValue();
 	            if (exit != 0) {
 	                os.writeObject(new ExecuteMessageResponse("Process exited with code " + exit + "\n" + output));
 	                Server.serverLog("Process exited with code " + exit + "\n" + output);
 	            } else {
-	            	String out = output.toString();
+	                String out = output.toString();
 	                os.writeObject(new ExecuteMessageResponse(out));
 	                if(!out.isEmpty())
-	                	Server.serverLog(out);
+	                    Server.serverLog(out);
 	            }
 	                
 	        } catch (IOException | InterruptedException e) {
 	            os.writeObject(new ExecuteMessageResponse(e.getMessage()));
+	            Server.serverLog(e.getMessage());
 	        }
 	    } catch (IOException e) {
-			Server.serverLog(e.getMessage());
-		} 
+	        Server.serverLog("Startup Error: " + e.getMessage());
+	        try {
+	             os.writeObject(new ExecuteMessageResponse(e.getMessage()));
+	        } catch (IOException ex) {
+	            Server.serverLog(ex.getMessage());
+	        }
+	    } 
 		finally {
 	        if (proc != null && proc.isAlive()) {
 	            proc.destroyForcibly();

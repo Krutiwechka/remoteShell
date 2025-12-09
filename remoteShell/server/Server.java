@@ -7,13 +7,11 @@ import java.net.SocketTimeoutException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
-import remoteShell.Protocol;
-
 public class Server {
 	protected static void serverLog(String msg) {
 		System.err.println("["+ LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "][SERVER]: " + msg);
 	}
-	public static void listen(String portStr, Protocol protocol) throws IllegalArgumentException {
+	public static void listen(String portStr) throws IllegalArgumentException {
 		int port;
 		try {
 			port = Integer.parseInt(portStr);
