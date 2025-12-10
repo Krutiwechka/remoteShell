@@ -95,7 +95,7 @@ public class ServerThread extends Thread{
 	            if(!finished) {
 	                proc.destroyForcibly();
 	                os.writeObject(new ExecuteMessageResponse("Timed out after 10 seconds."));
-	                return; 
+	                return;
 	            }
 	            
 	            int exit = proc.exitValue();

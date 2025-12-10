@@ -8,7 +8,7 @@ public class ServerStopThread extends Thread{
 	ServerStopThread() {
 		in = new Scanner(System.in);
 		this.setDaemon(true);
-		System.err.println("Enter 'quit' to stop server");
+		System.err.println("Enter 'quit' / 'q' to stop server");
 	}
 	public void run() {
 		while(true) {
@@ -22,7 +22,7 @@ public class ServerStopThread extends Thread{
 				continue;
 			}
 			String input = in.nextLine();
-			if(input.toLowerCase().equals("quit")) {
+			if(input.toLowerCase().equals("quit") || input.toLowerCase().equals("q")) {
 				in.close();
 				Server.serverLog("Stopping server...");
 				Server.setStopFlag(true);
