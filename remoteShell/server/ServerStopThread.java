@@ -3,7 +3,6 @@ package remoteShell.server;
 import java.util.Scanner;
 
 public class ServerStopThread extends Thread{
-	final static String quit = "quit";
 	Scanner in;
 	ServerStopThread() {
 		in = new Scanner(System.in);

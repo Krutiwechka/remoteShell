@@ -75,7 +75,7 @@ public class ServerThread extends Thread{
 	private void execute(Message msg) {
 		ExecuteMessage m = (ExecuteMessage)msg;
 		String command = m.command;
-		Server.serverLog("user " + this.name + " executed: " + command);
+		Server.serverLog("User " + this.name + " executed: " + command);
 		String[] cmd = command.split(" ");
 		ProcessBuilder pb = new ProcessBuilder(cmd);
 		pb.redirectErrorStream(true);
