@@ -94,7 +94,7 @@ public class Client {
 		System.out.println(
 			"Client commands:\n" + 
 			"\tq/quit - disconnect and exit application\n" +
-			"\tc/connect [protocol: TCP/UDP][port] [address] - connect/reconnect to server\n" + 
+			"\tc/connect [port] [address] - connect/reconnect to server\n" + 
 
 			"\tx/execute [command] - execute command in linux terminal\n"
 		);
@@ -144,11 +144,16 @@ public class Client {
 
 	static Message getCommand(Session ses, Scanner in) throws UnknownHostException{	
 		while (true) {
-			printPrompt();
+			//printPrompt();
 			if (in.hasNextLine()== false)
 				break;
 			String str = in.nextLine();
 			MessageType action = strToMessage(str);
+			if (action == null) {
+				System.err.println("Unknown command");
+				printPrompt();
+				continue;
+			}
 			switch (action) {
 				case Connect: {
 
@@ -172,9 +177,6 @@ public class Client {
 					return new ExecuteMessage(getArg(str));
 				}
 				default: 
-					System.err.println("Unknown command!");
-					printPrompt();
-
 					continue;
 			}
 		}
@@ -200,7 +202,7 @@ public class Client {
 		{
 			os.writeObject(msg);
 			ResponseMessage response = (ResponseMessage) is.readObject();
-			if (response.getErrorMessage() != "") {
+			if (!response.getErrorMessage().equals("")) {
 				System.err.println(response.getErrorMessage());
 			} else {
 				switch (response.getType()) {
