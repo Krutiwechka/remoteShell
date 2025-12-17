@@ -58,6 +58,7 @@ public class Client {
 			Session ses = new Session(name);
 			if (openSession(ses, is, os, in)) { 
 				try {
+					printPrompt();
 					while (true) {
 						Message msg = getCommand(ses, in);
 						if (!processCommand(ses, msg, is, os)) {
@@ -144,7 +145,6 @@ public class Client {
 
 	static Message getCommand(Session ses, Scanner in) throws UnknownHostException{	
 		while (true) {
-			//printPrompt();
 			if (in.hasNextLine()== false)
 				break;
 			String str = in.nextLine();
