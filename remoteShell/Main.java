@@ -28,8 +28,8 @@ public class Main {
 							"\t-l, --listen [PORT] 				Server starts listening chosen port\n" + 
 							"\t-c, --connect [PORT] [IP]	 	Сonnect chosen server\n" +
 							"\t-h, --help 						Сommand line syntax\n"+ 
-							"\t-n, --name [NAME]      			Set username for client"+
-							"(*) Uses TCP protocol as default");
+							"\t-n, --name [NAME]      			Set username for client\n"+
+							"\t(*) Uses TCP protocol as default");
 					break;
 					}
 				else if(args[i].equals("-l") || args[i].equals("--listen")) {
