@@ -25,10 +25,10 @@ public class Main {
 				while(i < args.length) {
 					if(args[i].equals("-h") || args[0].equals("--help")){
 					System.out.println(
-							"\t-l, --listen [PORT] 				Server starts listening chosen port\n" + 
-							"\t-c, --connect [PORT] [IP]	 	Сonnect chosen server\n" +
-							"\t-h, --help 						Сommand line syntax\n"+ 
-							"\t-n, --name [NAME]      			Set username for client\n"+
+							"\t-l, --listen [PORT]                    Server starts listening chosen port\n" + 
+							"\t-c, --connect [PORT] [IP]              Сonnect chosen server\n" +
+							"\t-h, --help                             Сommand line syntax\n"+ 
+							"\t-n, --name [NAME]                      Set username for client\n"+
 							"\t(*) Uses TCP protocol as default");
 					break;
 					}
