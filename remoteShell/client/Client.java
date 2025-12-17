@@ -105,6 +105,8 @@ public class Client {
 		if ( ses.connected ) {
 			ses.connected = false;
 			os.writeObject(new DisconnectMessage(ses.username));
+			System.out.println("Disconnected");
+			return;
 		}
 	}
 
