@@ -23,7 +23,6 @@ public class ServerStopThread extends Thread{
 			String input = in.nextLine();
 			if(input.toLowerCase().equals("quit") || input.toLowerCase().equals("q")) {
 				in.close();
-				Server.serverLog("Stopping server...");
 				Server.setStopFlag(true);
 				break;
 			}

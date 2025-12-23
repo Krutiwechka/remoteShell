@@ -1,17 +1,18 @@
 package remoteShell.server;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public class Server {
+	private static Registry registry;
+	private static RemoteShell remoteShell;
 	protected static void serverLog(String msg) {
 		System.err.println("["+ LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) + "][SERVER]: " + msg);
 	}
-	public static void listen(String portStr) throws IllegalArgumentException {
+	public static void listen(String portStr) throws IllegalArgumentException{
 		int port;
 		try {
 			port = Integer.parseInt(portStr);
@@ -21,30 +22,20 @@ public class Server {
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException("Invalid port format: " + portStr);
 		}
-		ServerStopThread stopper = new ServerStopThread();
-		stopper.start();
-		serverLog("Server started");
-		try(ServerSocket serv = new ServerSocket(port)){
-			serverLog("Listening port " + portStr +"...");
-			while (true) {
-				Socket sock = accept(serv);
-				if(sock != null) {
-					serverLog(sock.getInetAddress() + " connected");
-					ServerThread server = new ServerThread(sock);
-					server.start();
-				}
-				if(getStopFlag()) {
-					break;
-				}
+		try{
+			remoteShell = new RemoteShell();
+			registry = LocateRegistry.createRegistry(port);
+			registry.rebind("RemoteShell", remoteShell);
+			serverLog("Server started...");
+			ServerStopThread stopper = new ServerStopThread();
+			stopper.start();
+			while (!getStopFlag()) {
+					Thread.sleep(1000);
 			}
-		} catch (IOException e) {
-			serverLog(e.getMessage());
-		} finally {
-			serverLog("Stopped");
-		}
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {		
+			shutdown();
+		} catch (Exception e){
+			shutdown();
+			serverLog("Error: " + e.getMessage());
 		}
 	}
 	private static Object syncFlags = new Object();
@@ -59,15 +50,18 @@ public class Server {
 			stopFlag = value;
 		}
 	}
-	private static Socket accept(ServerSocket serv) {
-		try {
-			serv.setSoTimeout(1000);
-			return serv.accept();
-		} catch(SocketTimeoutException e) {
-			
-		} catch(IOException e) {
-			serverLog(e.getMessage());
+	private static void shutdown(){
+		serverLog("Shutting down server...");
+		try{
+			if(registry != null){
+				registry.unbind("RemoteShell");
+			}
+			if(remoteShell != null){
+				UnicastRemoteObject.unexportObject(remoteShell, true);
+			}
+			serverLog("Server stopped successfully");
+		} catch (Exception e){
+			serverLog("Error during shutdown: " + e.getMessage());
 		}
-		return null;
 	}
 }
