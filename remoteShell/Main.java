@@ -45,9 +45,10 @@ public class Main {
 					else if(i != args.length - 2 && args[i + 2].charAt(0) != '-') {
 						Client.connect(args[i + 1], args[i + 2], name);
 					}
-					else {
-						Client.connect(args[i + 1], name);
-					}
+					// else {
+					// 	Client.connect(args[i + 1], name);
+					// }
+					// Not supported :[
 					break;
 				}
 				else {
